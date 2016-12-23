@@ -5,10 +5,27 @@
 
 #include <cstdlib>
 #include <list>
+#include <result.hpp>
 
-typedef long long itype;
-typedef double    ftype;
+// data independent of type
+/*class number
+{
+      union data
+      {
+            itype i;
+            ftype f;
+      };
 
+      bool type;
+
+public:
+      number(itype d) :
+            data.i(d), type(
+
+
+}*/
+
+// all expressions derive from this class
 class expression
 {
 public:
@@ -17,6 +34,7 @@ public:
       virtual ftype interpretFloat() = 0;
 };
 
+// list that chains expressions together
 class expression_list
 {
       expression* expr;
@@ -38,8 +56,34 @@ public:
             }
       }
 
-      void interpretInts(std::list<ftype> &outputs);
-      void interpretFloats(std::list<ftype> &outputs);
+      void interpretInts(result &outputs, data_format output_type);
+      void interpretFloats(result &outputs);
+};
+
+// wrapper class for the ast
+class root_node
+{
+      expression_list* ast;
+      data_format default_type;
+
+public:
+      root_node(data_format o) :
+            ast(NULL), default_type(o) {}
+
+      ~root_node()
+      {
+            if (ast != NULL)
+            {
+                  delete ast;
+            }
+      }
+
+      void setList(expression_list* t_in)
+      {
+            ast = t_in;
+      }
+
+      void interpret(result &outputs);
 };
 
 class add_expression : public expression

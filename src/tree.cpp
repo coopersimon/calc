@@ -1,5 +1,6 @@
 #include <cmath>
 #include <tree.hpp>
+#include <result.hpp>
 
 namespace ans
 {
@@ -7,21 +8,22 @@ namespace ans
       ftype f;
 };
 
-void expression_list::interpretInts(std::list<ftype> &outputs)
+void expression_list::interpretInts(result &outputs, data_format default_type)
 {
       if (next != NULL)
       {
-            next->interpretInts(outputs);
+            next->interpretInts(outputs, default_type);
       }
 
+      data_format expression_type = default_type;
       ans::i = expr->interpretInt();
       ans::f = ans::i;
-      outputs.push_back(ans::f);
+      outputs.appendInt(ans::i, expression_type);
 
       return;
 }
 
-void expression_list::interpretFloats(std::list<ftype> &outputs)
+void expression_list::interpretFloats(result &outputs)
 {
       if (next != NULL)
       {
@@ -29,8 +31,25 @@ void expression_list::interpretFloats(std::list<ftype> &outputs)
       }
 
       ans::f = expr->interpretFloat();
-      outputs.push_back(ans::f);
-      
+      outputs.appendFloat(ans::f);
+
+      return;
+}
+
+void root_node::interpret(result &outputs)
+{
+      if (ast != NULL)
+      {
+            if (default_type == FP_DEC)
+            {
+                  ast->interpretFloats(outputs);
+            }
+            else
+            {
+                  ast->interpretInts(outputs, default_type);
+            }
+      }
+
       return;
 }
 

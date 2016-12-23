@@ -7,17 +7,9 @@
 #include <string>
 #include <sstream>
 
-enum data_format
-{
-      DEC,
-      HEX,
-      OCT,
-      BIN
-};
-
 int inputToLexer(char*, int*, int);
-int parseMaths(std::list<ftype>&);
-std::string outputString(std::list<ftype>&, data_format);
+int parseMaths(result&, data_format);
+//std::string outputString(std::list<ftype>&, data_format);
 
 namespace intext
 {
@@ -28,13 +20,11 @@ namespace intext
 
 int main(int argc, char* argv[])
 {
-      // output numbers
-      std::list<ftype> output;
       // run until ctrl-D
       bool active_input_mode = true;
 
       // options
-      data_format output_type = DEC;
+      data_format default_type = FP_DEC;
 
       // parse arguments
       for (int i = 1; i < argc; i++)
@@ -47,15 +37,19 @@ int main(int argc, char* argv[])
                   {
                         if (c == 'h')
                         {
-                              output_type = HEX;
+                              default_type = HEX;
                         }
                         else if (c == 'o')
                         {
-                              output_type = OCT;
+                              default_type = OCT;
                         }
                         else if (c == 'b')
                         {
-                              output_type = BIN;
+                              default_type = BIN;
+                        }
+                        else if (c == 'i')
+                        {
+                              default_type = INT_DEC;
                         }
                   }
             }
@@ -66,8 +60,9 @@ int main(int argc, char* argv[])
                   intext::offset = 0;
                   active_input_mode = false;
                   intext::data = std::string(argv[i]);
-                  parseMaths(output);
-                  std::cout << outputString(output, output_type);
+                  result output;
+                  parseMaths(output, default_type);
+                  std::cout << output.str();
             }
       }
 
@@ -82,103 +77,37 @@ int main(int argc, char* argv[])
             }
             else
             {
-                  parseMaths(output);
-                  std::cout << outputString(output, output_type);
+                  result output;
+                  parseMaths(output, default_type);
+                  std::cout << output.str();
             }
       }
 
       return 0;
 }
 
-int parseMaths(std::list<ftype>& output)
+int parseMaths(result& output, data_format default_type)
 {
-      expression_list* calc_ast;
-      bool use_float = false;
+      root_node calc_ast(default_type);
+      //data_format output_type = default_type;
 
-      yyparse(&calc_ast, &use_float);
+      yyparse(&calc_ast);
 
-      if (use_float)
+      // try
+      /*if (output_type == FP_DEC)
       {
-            // try{} catch{}
-            calc_ast->interpretFloats(output);
+            calc_ast.interpretFloats(output);
       }
       else
       {
-            // try{} catch{}
-            calc_ast->interpretInts(output);
-      }
+            calc_ast.interpretInts(output);
+      }*/
 
-      if (calc_ast != NULL)
-      {
-            delete calc_ast;
-      }
+      calc_ast.interpret(output);
+
+      // catch
 
       return 0;
-}
-
-std::string outputString(std::list<ftype>& output, data_format output_type)
-{
-      std::stringstream s;
-      int output_size = output.size();
-
-      s << "\t= ";
-
-      for (auto o : output)
-      {
-            switch (output_type)
-            {
-            case DEC:
-                  s << o;
-                  break;
-            case HEX:
-            {
-                  unsigned fill_width = 2;
-                  if (itype(o) >= 0xFFFFFFFF)
-                        fill_width = 16;
-                  else if (itype(o) >= 0xFFFF)
-                        fill_width = 8;
-                  else if (itype(o) >= 0xFF)
-                        fill_width = 4;
-                  s << std::setfill('0') << std::setw(fill_width) << std::hex << itype(o);
-                  break;
-            }
-            case OCT:
-                  s << std::setfill('0') << std::setw(22) << std::oct << itype(o);
-                  break;
-            case BIN:
-            {
-                  if (itype(o) >= 0xFFFFFFFF)
-                        s << std::bitset<64>(itype(o));
-                  else if (itype(o) >= 0xFFFFFF)
-                        s << std::bitset<48>(itype(o));
-                  else if (itype(o) >= 0xFFFF)
-                        s << std::bitset<32>(itype(o));
-                  else if (itype(o) >= 0xFF)
-                        s << std::bitset<16>(itype(o));
-                  else if (itype(o) >= 0xF)
-                        s << std::bitset<8>(itype(o));
-                  else
-                        s << std::bitset<4>(itype(o));
-                  break;
-            }
-            default:
-                  break;
-            }
-
-            output_size--;
-            if (output_size)
-            {
-                  s << ", ";
-            }
-            else
-            {
-                  s << "\n";
-            }
-      }
-
-      output.clear();
-
-      return s.str();
 }
 
 int inputToLexer(char* buffer, int* num_bytes_read, int max_bytes_to_read)

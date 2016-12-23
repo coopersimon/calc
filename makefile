@@ -4,11 +4,14 @@ CXXFLAGS= -Iinclude -Itarget -std=c++11 -Wall
 
 all : bin/calc
 
-bin/calc : src/calc.cpp target/tree.o target/token.o target/parse.o
-	$(CXX) $(CXXFLAGS) src/calc.cpp target/tree.o target/token.o target/parse.o -o bin/calc
+bin/calc : src/calc.cpp target/tree.o target/token.o target/parse.o target/result.o
+	$(CXX) $(CXXFLAGS) src/calc.cpp target/tree.o target/token.o target/parse.o target/result.o -o bin/calc
 
-target/tree.o : src/tree.cpp include/tree.hpp
+target/tree.o : src/tree.cpp include/tree.hpp include/result.hpp
 	$(CXX) $(CXXFLAGS) -c src/tree.cpp -o target/tree.o
+
+target/result.o : src/result.cpp include/result.hpp
+	$(CXX) $(CXXFLAGS) -c src/result.cpp -o target/result.o
 
 target/token.o : target/token.yy.cpp
 	$(CXX) $(CXXFLAGS) -c target/token.yy.cpp -o target/token.o
