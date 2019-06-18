@@ -4,7 +4,7 @@
 #include <tree.hpp>
 #include <parse.tab.hpp>
 
-int inputToLexer(char* buffer, int* num_bytes_read, int max_bytes_to_read);
+extern int inputToLexer(char* buffer, yy_size_t* num_bytes_read, int max_bytes_to_read);
 
 #undef YY_INPUT
 #define YY_INPUT(b,r,s) inputToLexer(b, &r, s)

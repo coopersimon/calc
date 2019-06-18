@@ -7,9 +7,12 @@
 #include <string>
 #include <sstream>
 
-int inputToLexer(char*, int*, int);
+typedef unsigned long yy_size_t;
+
+int inputToLexer(char*, yy_size_t*, int);
 int parseMaths(result&, data_format);
 //std::string outputString(std::list<ftype>&, data_format);
+extern int yyparse(root_node* calc_ast);
 
 namespace intext
 {
@@ -110,7 +113,7 @@ int parseMaths(result& output, data_format default_type)
       return 0;
 }
 
-int inputToLexer(char* buffer, int* num_bytes_read, int max_bytes_to_read)
+int inputToLexer(char* buffer, yy_size_t* num_bytes_read, int max_bytes_to_read)
 {
       int bytes_remaining = intext::data.length() - intext::offset;
       int num_bytes_to_read = (max_bytes_to_read > bytes_remaining) ?
@@ -121,7 +124,7 @@ int inputToLexer(char* buffer, int* num_bytes_read, int max_bytes_to_read)
             buffer[i] = intext::data.at(intext::offset + i);
       }
 
-      *num_bytes_read = num_bytes_to_read;
+      *num_bytes_read = static_cast< yy_size_t >( num_bytes_to_read );
       intext::offset += num_bytes_to_read;
       return 0;
 }

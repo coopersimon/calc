@@ -1,4 +1,4 @@
-%define parse.error verbose
+%define "parse.error" "verbose"
 %parse-param {root_node* calc_ast}
 %{
 #include <tree.hpp>
